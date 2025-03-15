@@ -47,14 +47,28 @@ def get_data():
         return None
     return data
 
+# Prevent SQL Injection by using parameterized queries
+# OWASP A03:2021 - Injection
 def save_to_db(data):
-    query = f"INSERT INTO mytable (column1, column2) VALUES ('{data}', 'Another Value')"
-    connection = pymysql.connect(**db_config)
-    cursor = connection.cursor()
-    cursor.execute(query)
-    connection.commit()
-    cursor.close()
-    connection.close()
+    if not data:
+        print("No data to save.")
+        return
+    try:
+        connection = pymysql.connect(
+            host=os.getenv('DB_HOST'),
+            user=os.getenv('DB_USER'),
+            password=os.getenv('DB_PASSWORD'),
+            database=os.getenv('DB_NAME', 'default_db')
+        )
+        cursor = connection.cursor()
+        query = "INSERT INTO mytable (column1, column2) VALUES (%s, %s)"
+        cursor.execute(query, (data, 'Another Value'))
+        connection.commit()
+    except pymysql.MySQLError as e:
+        print(f"Database error: {e}")
+    finally:
+        cursor.close()
+        connection.close()
 
 if __name__ == '__main__':
     user_input = get_user_input()
