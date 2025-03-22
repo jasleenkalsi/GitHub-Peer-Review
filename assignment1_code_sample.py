@@ -1,3 +1,4 @@
+# This script gets data from a URL, saves it to the database, and sends an email.
 import os
 import pymysql
 import re
